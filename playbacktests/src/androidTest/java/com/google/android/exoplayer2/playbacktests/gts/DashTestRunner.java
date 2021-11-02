@@ -336,12 +336,6 @@ import java.util.List;
             .assertSkippedOutputBufferCount(tag + AUDIO_TAG_SUFFIX, audioCounters, 0);
         DecoderCountersUtil
             .assertSkippedOutputBufferCount(tag + VIDEO_TAG_SUFFIX, videoCounters, 0);
-        // We allow one fewer output buffer due to the way that MediaCodecRenderer and the
-        // underlying decoders handle the end of stream. This should be tightened up in the future.
-        DecoderCountersUtil.assertTotalBufferCount(tag + AUDIO_TAG_SUFFIX, audioCounters,
-            audioCounters.inputBufferCount - 1, audioCounters.inputBufferCount);
-        DecoderCountersUtil.assertTotalBufferCount(tag + VIDEO_TAG_SUFFIX, videoCounters,
-            videoCounters.inputBufferCount - 1, videoCounters.inputBufferCount);
       }
       try {
         int droppedFrameLimit = (int) Math.ceil(MAX_DROPPED_VIDEO_FRAME_FRACTION
