@@ -1392,23 +1392,33 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       Format sampleFormat = Assertions.checkStateNotNull(sampleQueues[i].getUpstreamFormat());
       if (i == primaryExtractorTrackIndex) {
         Format[] formats = new Format[chunkSourceTrackCount];
+        boolean mergeMuxedAudioFormat =
+            primaryExtractorTrackType == C.TRACK_TYPE_AUDIO && muxedAudioFormat != null;
         if (chunkSourceTrackCount == 1) {
-          formats[0] = sampleFormat.withManifestFormatInfo(chunkSourceTrackGroup.getFormat(0));
+          Format playlistFormat = chunkSourceTrackGroup.getFormat(0);
+          if (mergeMuxedAudioFormat) {
+            playlistFormat = playlistFormat.withManifestFormatInfo(muxedAudioFormat);
+          }
+          formats[0] = sampleFormat.withManifestFormatInfo(playlistFormat);
         } else {
           for (int j = 0; j < chunkSourceTrackCount; j++) {
-            formats[j] = deriveFormat(chunkSourceTrackGroup.getFormat(j), sampleFormat, true);
+            Format playlistFormat = chunkSourceTrackGroup.getFormat(j);
+            if (mergeMuxedAudioFormat) {
+              playlistFormat = playlistFormat.withManifestFormatInfo(muxedAudioFormat);
+            }
+            formats[j] = deriveFormat(playlistFormat, sampleFormat, true);
           }
         }
         trackGroups[i] = new TrackGroup(formats);
         primaryTrackGroupIndex = i;
       } else {
         @Nullable
-        Format trackFormat =
+        Format playlistFormat =
             primaryExtractorTrackType == C.TRACK_TYPE_VIDEO
                     && MimeTypes.isAudio(sampleFormat.sampleMimeType)
                 ? muxedAudioFormat
                 : null;
-        trackGroups[i] = new TrackGroup(deriveFormat(trackFormat, sampleFormat, false));
+        trackGroups[i] = new TrackGroup(deriveFormat(playlistFormat, sampleFormat, false));
       }
     }
     this.trackGroups = createTrackGroupArrayWithDrmInfo(trackGroups);
