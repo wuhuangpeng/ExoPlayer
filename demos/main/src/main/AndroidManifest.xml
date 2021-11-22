@@ -35,10 +35,11 @@
       android:largeHeap="true"
       android:allowBackup="false"
       android:requestLegacyExternalStorage="true"
+      android:usesCleartextTraffic="true"
       android:name="androidx.multidex.MultiDexApplication"
       tools:targetApi="29">
 
-    <activity android:name=".SampleChooserActivity"
+    <activity android:name=".TestActivity"
         android:configChanges="keyboardHidden"
         android:label="@string/application_name"
         android:theme="@style/Theme.AppCompat"

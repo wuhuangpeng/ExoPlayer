@@ -19,10 +19,12 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.ParserException;
 import com.google.android.exoplayer2.extractor.TrackOutput;
+import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.NalUnitUtil;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.google.android.exoplayer2.video.AvcConfig;
+import java.util.Arrays;
 
 /** Parses video tags from an FLV stream and extracts H.264 nal units. */
 /* package */ final class VideoTagPayloadReader extends TagPayloadReader {
@@ -126,6 +128,19 @@ import com.google.android.exoplayer2.video.AvcConfig;
         nalStartCode.setPosition(0);
         output.sampleData(nalStartCode, 4);
         bytesWritten += 4;
+
+        if (NalUnitUtil.isNalUnitSei(MimeTypes.VIDEO_H264, data.getData()[data.getPosition()])) {
+          int nalLen = bytesToWrite;
+          byte[] nal = new byte[nalLen];
+          System.arraycopy(data.getData(), data.getPosition(), nal, 0, nalLen);
+          int len = NalUnitUtil.unescapeStream(nal, nalLen);
+          if (len == 9) {
+            ParsableByteArray arr = new ParsableByteArray(nal);
+            arr.setPosition(1);
+            long timestamp = arr.readLong();
+            Log.i("Tencent", "timestamp:" + timestamp + ", bytes:" + Arrays.toString(nal));
+          }
+        }
 
         // Write the payload of the NAL unit.
         output.sampleData(data, bytesToWrite);
